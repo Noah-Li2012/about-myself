@@ -1,1 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noah Li's 个人网站</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: white;
+            background-color: black;
+            overflow: hidden;
+        }
 
+        header {
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .like-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .like-button:hover {
+            background-color: #45a049;
+        }
+
+        .likes-count {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .comments-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comments-container h3 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .comment {
+            background-color: #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+
+        .comment-input-container {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comment-input-container textarea {
+            width: 100%;
+            padding: 10px;
+            background-color: #444;
+            border: 1px solid #666;
+            color: white;
+            margin-bottom: 10px;
+            resize: none;
+        }
+
+        .comment-input-container button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .comment-input-container button:hover {
+            background-color: #45a049;
+        }
+
+        .likes-section {
+            margin-bottom: 20px;
+        }
+
+        .personal-info {
+            margin-bottom: 20px;
+        }
+
+        .personal-info a {
+            color: #00aced;
+        }
+
+        .age-section {
+            margin-top: 20px;
+        }
+
+        #rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="rain"></canvas>
+
+<header>
+    <h1>Noah Li's 个人网站</h1>
+</header>
+
+<div class="content">
+    <div class="personal-info">
+        <h2>名字: Noah Li</h2>
+        <p>爱好: 编程</p>
+        <p>B站账号: <a href="https://space.bilibili.com/3546630999509229?spm_id_from=333.337.0.0" target="_blank">Noah2012号-编程</a></p>
+    </div>
+
+    <div class="age-section">
+        <h2>我的年龄: <span id="age">正在计算...</span></h2>
+    </div>
+
+    <div class="likes-section">
+        <button class="like-button" onclick="increaseLikes()">点赞</button>
+        <div class="likes-count">
+            点赞数量: <span id="like-count">0</span>
+        </div>
+    </div>
+</div>
+
+<div class="comments-container">
+    <h3>评论区</h3>
+    <div id="comments-list" style="flex-grow: 1; overflow-y: auto;">
+    </div>
+    <div class="comment-input-container">
+        <textarea id="comment-input" placeholder="请输入评论..." rows="3"></textarea>
+        <button onclick="addComment()">发布评论</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('rain');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+    const drops = [];
+
+    function createDrop() {
+        const char = characters[Math.floor(Math.random() * characters.length)];
+        const x = Math.floor(Math.random() * canvas.width);
+        const y = -Math.random() * canvas.height;
+        const speed = Math.random() * 5 + 2;
+        drops.push({ char, x, y, speed });
+    }
+
+    function updateRain() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "lime";
+
+        for (const drop of drops) {
+            drop.y += drop.speed;
+            if (drop.y > canvas.height) {
+                drop.y = -20;
+            }
+            ctx.fillText(drop.char, drop.x, drop.y);
+        }
+    }
+
+    function animate() {
+        createDrop();
+        updateRain();
+        requestAnimationFrame(animate);
+    }
+
+    ctx.font = '18px monospace';
+    animate();
+
+    function calculateAge() {
+        const birthDate = new Date(2012, 11, 27);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        document.getElementById("age").textContent = age;
+    }
+
+    calculateAge();
+
+    let likeCount = localStorage.getItem('likeCount') ? parseInt(localStorage.getItem('likeCount')) : 0;
+    document.getElementById("like-count").textContent = likeCount;
+
+    function increaseLikes() {
+        likeCount++;
+        document.getElementById("like-count").textContent = likeCount;
+        localStorage.setItem('likeCount', likeCount);
+    }
+
+    function loadComments() {
+        const comments = JSON.parse(localStorage.getItem('comments')) || [];
+        const commentsList = document.getElementById('comments-list');
+        commentsList.innerHTML = '';
+        comments.forEach(comment => {
+            const commentDiv = document.createElement('div');
+            commentDiv.classList.add('comment');
+            commentDiv.innerText = comment;
+            commentsList.appendChild(commentDiv);
+        });
+
+        commentsList.scrollTop = commentsList.scrollHeight;
+    }
+
+    function addComment() {
+        const commentInput = document.getElementById('comment-input');
+        const newComment = commentInput.value.trim();
+        if (newComment) {
+            const comments = JSON.parse(localStorage.getItem('comments')) || [];
+            comments.push(newComment);
+            localStorage.setItem('comments', JSON.stringify(comments));
+
+            loadComments();
+            commentInput.value = '';
+        }
+    }
+
+    loadComments();
+</script>
+
+</body>
+</html>
